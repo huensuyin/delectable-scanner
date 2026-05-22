@@ -1,0 +1,490 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans);background:var(--color-background-tertiary)}
+.app{max-width:430px;margin:0 auto;background:var(--color-background-primary);min-height:100vh;display:flex;flex-direction:column}
+.topbar{background:#C2185B;padding:14px 16px 12px;display:flex;align-items:center;gap:10px}
+.topbar-logo{width:32px;height:32px;background:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px}
+.topbar h1{color:#fff;font-size:16px;font-weight:500;line-height:1.2}
+.topbar p{color:#F8BBD9;font-size:11px;margin-top:1px}
+.screen{flex:1;overflow-y:auto}
+.home-screen{padding:16px}
+.section-label{font-size:11px;font-weight:500;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:0.06em;margin:16px 0 8px}
+.doc-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:8px}
+.doc-card{background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:14px 10px;text-align:center;cursor:pointer;transition:transform 0.1s}
+.doc-card:active{transform:scale(0.96)}
+.doc-card .icon{font-size:24px;margin-bottom:6px}
+.doc-card .label{font-size:12px;font-weight:500;color:var(--color-text-primary);line-height:1.3}
+.doc-card .prefix{font-size:10px;color:var(--color-text-secondary);margin-top:3px;font-family:var(--font-mono)}
+.doc-card.invoice{border-top:2px solid #C2185B}
+.doc-card.supplier{border-top:2px solid #E65100}
+.doc-card.petty{border-top:2px solid #2E7D32}
+.doc-card.statement{border-top:2px solid #1565C0}
+.doc-card.contract{border-top:2px solid #6A1B9A}
+.doc-card.other{border-top:2px solid #757575}
+.recent-title{font-size:11px;font-weight:500;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:0.06em;margin:20px 0 8px}
+.recent-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:0.5px solid var(--color-border-tertiary)}
+.recent-icon{width:36px;height:36px;border-radius:var(--border-radius-md);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.recent-icon.inv{background:#FCE4EC}
+.recent-icon.sup{background:#FFF3E0}
+.recent-icon.pet{background:#E8F5E9}
+.recent-info{flex:1;min-width:0}
+.recent-name{font-size:13px;font-weight:500;color:var(--color-text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.recent-meta{font-size:11px;color:var(--color-text-secondary);margin-top:2px}
+.recent-badge{font-size:10px;padding:2px 8px;border-radius:20px;background:#E8F5E9;color:#2E7D32;font-weight:500;white-space:nowrap}
+.recent-badge.pending{background:#FFF3E0;color:#E65100}
+
+.capture-screen{display:flex;flex-direction:column;height:100%}
+.capture-header{padding:12px 16px;display:flex;align-items:center;gap:10px;border-bottom:0.5px solid var(--color-border-tertiary)}
+.back-btn{width:32px;height:32px;border-radius:50%;border:0.5px solid var(--color-border-secondary);background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--color-text-primary)}
+.capture-header h2{font-size:15px;font-weight:500;color:var(--color-text-primary);flex:1}
+.capture-header .ref-badge{font-size:11px;font-family:var(--font-mono);background:var(--color-background-secondary);padding:3px 8px;border-radius:var(--border-radius-md);color:var(--color-text-secondary)}
+.camera-area{background:#111;position:relative;overflow:hidden;flex-shrink:0}
+.camera-placeholder{width:100%;aspect-ratio:3/4;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:#1a1a1a}
+.cam-icon{font-size:48px;opacity:0.4}
+.cam-hint{font-size:13px;color:#888;text-align:center;padding:0 20px}
+.corner{position:absolute;width:24px;height:24px;border-color:#C2185B;border-style:solid;border-width:0}
+.corner.tl{top:16px;left:16px;border-top-width:3px;border-left-width:3px;border-radius:4px 0 0 0}
+.corner.tr{top:16px;right:16px;border-top-width:3px;border-right-width:3px;border-radius:0 4px 0 0}
+.corner.bl{bottom:16px;left:16px;border-bottom-width:3px;border-left-width:3px;border-radius:0 0 0 4px}
+.corner.br{bottom:16px;right:16px;border-bottom-width:3px;border-right-width:3px;border-radius:0 0 4px 0}
+.preview-img{width:100%;aspect-ratio:3/4;object-fit:cover;display:none}
+#fileInput{display:none}
+.cam-controls{padding:14px 16px;display:flex;gap:10px}
+.shutter-btn{flex:1;height:52px;background:#C2185B;color:#fff;border:none;border-radius:var(--border-radius-lg);font-size:15px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
+.shutter-btn:active{background:#AD1457}
+.retake-btn{width:52px;height:52px;background:var(--color-background-secondary);border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-lg);cursor:pointer;font-size:20px;display:none;align-items:center;justify-content:center}
+.form-area{padding:16px;flex:1}
+.field{margin-bottom:12px}
+.field label{font-size:12px;font-weight:500;color:var(--color-text-secondary);display:block;margin-bottom:4px}
+.field input,.field select,.field textarea{width:100%;font-size:14px;border-radius:var(--border-radius-md)}
+.field textarea{height:56px;resize:none}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.ref-display{background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:8px 12px;font-family:var(--font-mono);font-size:14px;font-weight:500;color:#C2185B}
+.gdrive-select{display:flex;flex-direction:column;gap:6px}
+.folder-opt{display:flex;align-items:center;gap:8px;padding:8px 12px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);cursor:pointer;background:var(--color-background-primary)}
+.folder-opt.selected{border-color:#C2185B;background:#FFF0F5}
+.folder-opt input{accent-color:#C2185B}
+.folder-opt .folder-label{font-size:13px;color:var(--color-text-primary)}
+.folder-opt .folder-sub{font-size:11px;color:var(--color-text-secondary)}
+.upload-btn{width:100%;height:52px;background:#C2185B;color:#fff;border:none;border-radius:var(--border-radius-lg);font-size:15px;font-weight:500;cursor:pointer;margin-top:12px;display:flex;align-items:center;justify-content:center;gap:8px}
+.upload-btn:disabled{opacity:0.5;cursor:not-allowed}
+
+.success-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px;text-align:center;gap:16px;flex:1}
+.success-ring{width:80px;height:80px;border-radius:50%;background:#E8F5E9;display:flex;align-items:center;justify-content:center;font-size:40px}
+.success-screen h2{font-size:20px;font-weight:500;color:var(--color-text-primary)}
+.success-screen p{font-size:14px;color:var(--color-text-secondary);line-height:1.6}
+.success-ref{font-family:var(--font-mono);font-size:15px;font-weight:500;background:var(--color-background-secondary);padding:8px 20px;border-radius:var(--border-radius-md);color:#C2185B}
+.gdrive-confirm{display:flex;align-items:center;gap:10px;background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:12px 14px;width:100%;text-align:left}
+.gdrive-confirm .icon{font-size:24px;flex-shrink:0}
+.gdrive-confirm .info{flex:1}
+.gdrive-confirm .info .name{font-size:13px;font-weight:500;color:var(--color-text-primary)}
+.gdrive-confirm .info .path{font-size:11px;color:var(--color-text-secondary);margin-top:2px}
+.done-btn{width:100%;height:48px;background:#C2185B;color:#fff;border:none;border-radius:var(--border-radius-lg);font-size:15px;font-weight:500;cursor:pointer;margin-top:8px}
+.another-btn{width:100%;height:44px;background:var(--color-background-primary);color:#C2185B;border:0.5px solid #C2185B;border-radius:var(--border-radius-lg);font-size:14px;cursor:pointer}
+.progress-bar{height:3px;background:#FCE4EC;position:relative;overflow:hidden;margin-bottom:1px}
+.progress-fill{height:100%;background:#C2185B;transition:width 0.3s}
+.setup-screen{padding:20px 16px}
+.setup-screen h2{font-size:18px;font-weight:500;margin-bottom:6px;color:var(--color-text-primary)}
+.setup-screen p{font-size:13px;color:var(--color-text-secondary);margin-bottom:20px;line-height:1.6}
+.setup-field{margin-bottom:14px}
+.setup-field label{font-size:12px;font-weight:500;color:var(--color-text-secondary);display:block;margin-bottom:5px}
+.setup-save{width:100%;height:48px;background:#C2185B;color:#fff;border:none;border-radius:var(--border-radius-lg);font-size:15px;font-weight:500;cursor:pointer;margin-top:8px}
+.counters-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px}
+.counter-card{background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:8px 10px;text-align:center}
+.counter-card .ct-num{font-size:20px;font-weight:500;color:var(--color-text-primary)}
+.counter-card .ct-label{font-size:10px;color:var(--color-text-secondary);margin-top:2px}
+.tab-bar{display:flex;border-top:0.5px solid var(--color-border-tertiary);background:var(--color-background-primary)}
+.tab{flex:1;padding:10px 0 8px;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;border:none;background:none}
+.tab .tab-icon{font-size:20px}
+.tab .tab-label{font-size:10px;color:var(--color-text-secondary)}
+.tab.active .tab-label{color:#C2185B;font-weight:500}
+.notify{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#323232;color:#fff;padding:10px 20px;border-radius:24px;font-size:13px;opacity:0;transition:opacity 0.3s;pointer-events:none;z-index:100;white-space:nowrap}
+.notify.show{opacity:1}
+</style>
+
+<div class="app" id="app">
+  <div class="topbar">
+    <div class="topbar-logo">🎂</div>
+    <div>
+      <h1>For My Cake Sdn Bhd</h1>
+      <p>Document Scanner & Uploader</p>
+    </div>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+  <div class="screen" id="mainScreen">
+    <div id="homeView" class="home-screen">
+      <div class="section-label">Scan a document</div>
+      <div class="doc-grid">
+        <div class="doc-card invoice" onclick="openCapture('invoice')">
+          <div class="icon">🧾</div>
+          <div class="label">Customer Invoice</div>
+          <div class="prefix">INV-###</div>
+        </div>
+        <div class="doc-card supplier" onclick="openCapture('supplier')">
+          <div class="icon">📦</div>
+          <div class="label">Supplier Bill</div>
+          <div class="prefix">SUP-###</div>
+        </div>
+        <div class="doc-card petty" onclick="openCapture('petty')">
+          <div class="icon">💵</div>
+          <div class="label">Petty Cash Receipt</div>
+          <div class="prefix">REC-###</div>
+        </div>
+        <div class="doc-card statement" onclick="openCapture('statement')">
+          <div class="icon">🏦</div>
+          <div class="label">Bank Statement</div>
+          <div class="prefix">STMT-###</div>
+        </div>
+        <div class="doc-card contract" onclick="openCapture('contract')">
+          <div class="icon">📝</div>
+          <div class="label">Contract</div>
+          <div class="prefix">CTR-###</div>
+        </div>
+        <div class="doc-card other" onclick="openCapture('other')">
+          <div class="icon">📄</div>
+          <div class="label">Other Document</div>
+          <div class="prefix">DOC-###</div>
+        </div>
+      </div>
+      <div class="counters-grid">
+        <div class="counter-card"><div class="ct-num" id="cntInv">0</div><div class="ct-label">Invoices</div></div>
+        <div class="counter-card"><div class="ct-num" id="cntSup">0</div><div class="ct-label">Supplier Bills</div></div>
+        <div class="counter-card"><div class="ct-num" id="cntPet">0</div><div class="ct-label">Receipts</div></div>
+      </div>
+      <div class="recent-title">Recently uploaded</div>
+      <div id="recentList">
+        <div style="padding:20px 0;text-align:center;color:var(--color-text-secondary);font-size:13px">No uploads yet. Scan your first document above.</div>
+      </div>
+    </div>
+
+    <div id="captureView" style="display:none;flex-direction:column;height:calc(100vh - 96px);overflow-y:auto">
+      <div class="capture-header">
+        <button class="back-btn" onclick="goHome()">←</button>
+        <h2 id="captureTitle">Scan Invoice</h2>
+        <div class="ref-badge" id="refBadge">INV-001</div>
+      </div>
+      <div class="camera-area">
+        <div class="camera-placeholder" id="cameraPlaceholder" onclick="triggerCamera()">
+          <div class="corner tl"></div><div class="corner tr"></div>
+          <div class="corner bl"></div><div class="corner br"></div>
+          <div class="cam-icon">📷</div>
+          <div class="cam-hint">Tap to take photo or choose from gallery</div>
+        </div>
+        <img id="previewImg" class="preview-img" alt="preview"/>
+        <input type="file" id="fileInput" accept="image/*" capture="environment" onchange="handlePhoto(event)"/>
+      </div>
+      <div class="cam-controls">
+        <button class="shutter-btn" id="captureBtn" onclick="triggerCamera()">📷  Take Photo</button>
+        <button class="retake-btn" id="retakeBtn" onclick="retakePhoto()">↺</button>
+      </div>
+      <div class="form-area">
+        <div class="field">
+          <label>Document Reference (auto-generated)</label>
+          <div class="ref-display" id="refDisplay">INV-001</div>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>Date</label>
+            <input type="date" id="docDate"/>
+          </div>
+          <div class="field">
+            <label>Amount (RM)</label>
+            <input type="number" id="docAmount" placeholder="0.00" step="0.01"/>
+          </div>
+        </div>
+        <div class="field" id="partyField">
+          <label id="partyLabel">Customer Name</label>
+          <input type="text" id="docParty" placeholder="e.g. Sunway Events Sdn Bhd"/>
+        </div>
+        <div class="field">
+          <label>Description / Notes</label>
+          <textarea id="docNotes" placeholder="e.g. 3-tier wedding cake, order #W-204"></textarea>
+        </div>
+        <div class="field">
+          <label>Upload to Google Drive folder</label>
+          <div class="gdrive-select" id="folderSelect"></div>
+        </div>
+        <button class="upload-btn" id="uploadBtn" onclick="uploadDocument()" disabled>
+          ☁  Upload to Google Drive
+        </button>
+      </div>
+    </div>
+
+    <div id="successView" style="display:none;flex-direction:column;height:calc(100vh - 96px)">
+      <div class="success-screen">
+        <div class="success-ring">✓</div>
+        <h2>Document uploaded!</h2>
+        <p>Saved to Google Drive and recorded in<br>your financial system.</p>
+        <div class="success-ref" id="successRef">INV-001</div>
+        <div class="gdrive-confirm">
+          <div class="icon">☁</div>
+          <div class="info">
+            <div class="name" id="successFolder">Invoices /</div>
+            <div class="path" id="successPath">For My Cake Sdn Bhd – Accounts / Invoices</div>
+          </div>
+        </div>
+        <p id="successFilename" style="font-size:12px;color:var(--color-text-secondary);font-family:var(--font-mono)"></p>
+        <button class="done-btn" onclick="goHome()">Done</button>
+        <button class="another-btn" onclick="scanAnother()">Scan another document</button>
+      </div>
+    </div>
+
+    <div id="settingsView" style="display:none">
+      <div class="setup-screen">
+        <h2>Settings</h2>
+        <p>Set your Google Drive folder URL and staff name. These are saved on this device.</p>
+        <div class="setup-field">
+          <label>Your name (staff)</label>
+          <input type="text" id="staffName" placeholder="e.g. Ahmad Faris"/>
+        </div>
+        <div class="setup-field">
+          <label>Google Drive – Invoices folder URL</label>
+          <input type="url" id="driveInv" placeholder="https://drive.google.com/drive/folders/..."/>
+        </div>
+        <div class="setup-field">
+          <label>Google Drive – Supplier Bills folder URL</label>
+          <input type="url" id="driveSup" placeholder="https://drive.google.com/drive/folders/..."/>
+        </div>
+        <div class="setup-field">
+          <label>Google Drive – Petty Cash Receipts folder URL</label>
+          <input type="url" id="drivePet" placeholder="https://drive.google.com/drive/folders/..."/>
+        </div>
+        <div class="setup-field">
+          <label>Google Drive – Bank Statements folder URL</label>
+          <input type="url" id="driveStmt" placeholder="https://drive.google.com/drive/folders/..."/>
+        </div>
+        <div class="setup-field">
+          <label>Google Drive – Contracts folder URL</label>
+          <input type="url" id="driveCtr" placeholder="https://drive.google.com/drive/folders/..."/>
+        </div>
+        <button class="setup-save" onclick="saveSettings()">Save Settings</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="tab-bar">
+    <button class="tab active" id="tabHome" onclick="switchTab('home')">
+      <span class="tab-icon">🏠</span><span class="tab-label">Home</span>
+    </button>
+    <button class="tab" id="tabScan" onclick="openCapture('invoice')">
+      <span class="tab-icon">📷</span><span class="tab-label">Scan</span>
+    </button>
+    <button class="tab" id="tabSettings" onclick="switchTab('settings')">
+      <span class="tab-icon">⚙</span><span class="tab-label">Settings</span>
+    </button>
+  </div>
+</div>
+<div class="notify" id="notify"></div>
+
+<script>
+const DOCTYPE_CONFIG = {
+  invoice:  {title:'Scan Customer Invoice',  prefix:'INV',  party:'Customer Name',  folder:'Invoices',          folderKey:'driveInv',  icon:'🧾', recentClass:'inv'},
+  supplier: {title:'Scan Supplier Bill',     prefix:'SUP',  party:'Supplier Name',  folder:'Supplier Bills',    folderKey:'driveSup',  icon:'📦', recentClass:'sup'},
+  petty:    {title:'Scan Petty Cash Receipt',prefix:'REC',  party:'Paid by (Staff)',folder:'Petty Cash Receipts',folderKey:'drivePet', icon:'💵', recentClass:'pet'},
+  statement:{title:'Scan Bank Statement',    prefix:'STMT', party:'Bank Name',      folder:'Bank Statements',   folderKey:'driveStmt', icon:'🏦', recentClass:'sup'},
+  contract: {title:'Scan Contract',          prefix:'CTR',  party:'Party Name',     folder:'Contracts',         folderKey:'driveCtr',  icon:'📝', recentClass:'inv'},
+  other:    {title:'Scan Document',          prefix:'DOC',  party:'From / Related', folder:'Other Documents',   folderKey:'driveInv',  icon:'📄', recentClass:'sup'},
+};
+
+let currentType = 'invoice';
+let hasPhoto = false;
+let counters = {INV:1,SUP:1,REC:1,STMT:1,CTR:1,DOC:1};
+let recentDocs = [];
+let settings = {};
+
+function getState(){
+  try{
+    const s = localStorage.getItem('fmcState');
+    if(s){const p=JSON.parse(s);counters=p.counters||counters;recentDocs=p.recent||[];settings=p.settings||{};}
+  }catch(e){}
+}
+function saveState(){
+  try{localStorage.setItem('fmcState',JSON.stringify({counters,recent:recentDocs,settings}));}catch(e){}
+}
+
+function padNum(n){return String(n).padStart(3,'0')}
+function getRef(type){const cfg=DOCTYPE_CONFIG[type];return `${cfg.prefix}-${padNum(counters[cfg.prefix]||1)}`;}
+
+function openCapture(type){
+  currentType=type;
+  hasPhoto=false;
+  const cfg=DOCTYPE_CONFIG[type];
+  document.getElementById('captureTitle').textContent=cfg.title;
+  const ref=getRef(type);
+  document.getElementById('refBadge').textContent=ref;
+  document.getElementById('refDisplay').textContent=ref;
+  document.getElementById('partyLabel').textContent=cfg.party;
+  document.getElementById('docParty').placeholder='e.g. '+( type==='invoice'?'Sunway Events Sdn Bhd': type==='petty'?'Ahmad Faris':'Bernas Flour Sdn Bhd');
+  document.getElementById('docDate').value=new Date().toISOString().split('T')[0];
+  document.getElementById('docAmount').value='';
+  document.getElementById('docNotes').value='';
+  document.getElementById('docParty').value='';
+  document.getElementById('previewImg').style.display='none';
+  document.getElementById('cameraPlaceholder').style.display='flex';
+  document.getElementById('captureBtn').style.display='flex';
+  document.getElementById('retakeBtn').style.display='none';
+  document.getElementById('uploadBtn').disabled=true;
+  buildFolderSelect(type);
+  showView('captureView');
+  switchTab('scan');
+}
+
+function buildFolderSelect(type){
+  const cfg=DOCTYPE_CONFIG[type];
+  const sel=document.getElementById('folderSelect');
+  const folders=[
+    {key:'driveInv',  label:'Invoices',              sub:'INV-### files'},
+    {key:'driveSup',  label:'Supplier Bills',         sub:'SUP-### files'},
+    {key:'drivePet',  label:'Petty Cash Receipts',    sub:'REC-### files'},
+    {key:'driveStmt', label:'Bank Statements',        sub:'STMT-### files'},
+    {key:'driveCtr',  label:'Contracts & Agreements', sub:'CTR-### files'},
+  ];
+  sel.innerHTML=folders.map(f=>`
+    <label class="folder-opt ${f.key===cfg.folderKey?'selected':''}">
+      <input type="radio" name="folder" value="${f.key}" ${f.key===cfg.folderKey?'checked':''}>
+      <div><div class="folder-label">📁 ${f.label}</div><div class="folder-sub">${f.sub}</div></div>
+    </label>`).join('');
+}
+
+function triggerCamera(){document.getElementById('fileInput').click();}
+
+function handlePhoto(e){
+  const file=e.target.files[0];
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=function(ev){
+    const img=document.getElementById('previewImg');
+    img.src=ev.target.result;
+    img.style.display='block';
+    document.getElementById('cameraPlaceholder').style.display='none';
+    document.getElementById('captureBtn').style.display='none';
+    document.getElementById('retakeBtn').style.display='flex';
+    hasPhoto=true;
+    document.getElementById('uploadBtn').disabled=false;
+    setProgress(40);
+  };
+  reader.readAsDataURL(file);
+}
+
+function retakePhoto(){
+  hasPhoto=false;
+  document.getElementById('previewImg').style.display='none';
+  document.getElementById('cameraPlaceholder').style.display='flex';
+  document.getElementById('captureBtn').style.display='flex';
+  document.getElementById('retakeBtn').style.display='none';
+  document.getElementById('uploadBtn').disabled=true;
+  document.getElementById('fileInput').value='';
+  setProgress(0);
+}
+
+function uploadDocument(){
+  if(!hasPhoto){showNotify('Please take a photo first');return;}
+  const cfg=DOCTYPE_CONFIG[currentType];
+  const ref=getRef(currentType);
+  const date=document.getElementById('docDate').value||new Date().toISOString().split('T')[0];
+  const party=document.getElementById('docParty').value||'Unknown';
+  const amount=document.getElementById('docAmount').value;
+  const notes=document.getElementById('docNotes').value;
+  const selectedFolder=document.querySelector('input[name="folder"]:checked')?.value||cfg.folderKey;
+
+  const folderNames={driveInv:'Invoices',driveSup:'Supplier Bills',drivePet:'Petty Cash Receipts',driveStmt:'Bank Statements',driveCtr:'Contracts & Agreements'};
+  const folderName=folderNames[selectedFolder]||'Invoices';
+  const safeParty=party.replace(/[^a-zA-Z0-9\s]/g,'').replace(/\s+/g,'_').slice(0,20);
+  const filename=`${ref}_${safeParty}_${date.replace(/-/g,'')}.jpg`;
+
+  setProgress(70);
+  const btn=document.getElementById('uploadBtn');
+  btn.textContent='Uploading…';
+  btn.disabled=true;
+
+  setTimeout(()=>{
+    setProgress(100);
+    counters[cfg.prefix]=(counters[cfg.prefix]||1)+1;
+    recentDocs.unshift({ref,party,amount,date,type:currentType,folder:folderName,filename,icon:cfg.icon,recentClass:cfg.recentClass});
+    if(recentDocs.length>10)recentDocs.pop();
+    saveState();
+    renderRecent();
+    updateCounters();
+
+    document.getElementById('successRef').textContent=ref;
+    document.getElementById('successFolder').textContent=`📁 ${folderName}`;
+    document.getElementById('successPath').textContent=`For My Cake Sdn Bhd – Accounts / ${folderName}`;
+    document.getElementById('successFilename').textContent=filename;
+    showView('successView');
+    setProgress(0);
+  },1200);
+}
+
+function scanAnother(){openCapture(currentType);}
+
+function goHome(){showView('homeView');switchTab('home');setProgress(0);}
+
+function showView(id){
+  ['homeView','captureView','successView','settingsView'].forEach(v=>{
+    const el=document.getElementById(v);
+    if(el){el.style.display=v===id?(v==='homeView'?'block':'flex'):'none';}
+  });
+}
+
+function switchTab(tab){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  if(tab==='home'){document.getElementById('tabHome').classList.add('active');showView('homeView');}
+  else if(tab==='scan'){document.getElementById('tabScan').classList.add('active');}
+  else if(tab==='settings'){document.getElementById('tabSettings').classList.add('active');showView('settingsView');loadSettings();}
+}
+
+function loadSettings(){
+  document.getElementById('staffName').value=settings.staffName||'';
+  document.getElementById('driveInv').value=settings.driveInv||'';
+  document.getElementById('driveSup').value=settings.driveSup||'';
+  document.getElementById('drivePet').value=settings.drivePet||'';
+  document.getElementById('driveStmt').value=settings.driveStmt||'';
+  document.getElementById('driveCtr').value=settings.driveCtr||'';
+}
+
+function saveSettings(){
+  settings={
+    staffName:document.getElementById('staffName').value,
+    driveInv:document.getElementById('driveInv').value,
+    driveSup:document.getElementById('driveSup').value,
+    drivePet:document.getElementById('drivePet').value,
+    driveStmt:document.getElementById('driveStmt').value,
+    driveCtr:document.getElementById('driveCtr').value,
+  };
+  saveState();
+  showNotify('Settings saved');
+}
+
+function renderRecent(){
+  const list=document.getElementById('recentList');
+  if(!recentDocs.length){list.innerHTML='<div style="padding:20px 0;text-align:center;color:var(--color-text-secondary);font-size:13px">No uploads yet. Scan your first document above.</div>';return;}
+  list.innerHTML=recentDocs.map(d=>`
+    <div class="recent-item">
+      <div class="recent-icon ${d.recentClass}">${d.icon}</div>
+      <div class="recent-info">
+        <div class="recent-name">${d.ref} — ${d.party||'—'}</div>
+        <div class="recent-meta">${d.date} · ${d.folder}${d.amount?' · RM '+parseFloat(d.amount).toFixed(2):''}</div>
+      </div>
+      <div class="recent-badge ${d.type==='invoice'?'':'pending'}">${d.type==='invoice'?'Uploaded':'Uploaded'}</div>
+    </div>`).join('');
+}
+
+function updateCounters(){
+  document.getElementById('cntInv').textContent=(counters.INV||1)-1;
+  document.getElementById('cntSup').textContent=(counters.SUP||1)-1;
+  document.getElementById('cntPet').textContent=(counters.REC||1)-1;
+}
+
+function setProgress(pct){document.getElementById('progressFill').style.width=pct+'%';}
+
+function showNotify(msg){
+  const n=document.getElementById('notify');
+  n.textContent=msg;n.classList.add('show');
+  setTimeout(()=>n.classList.remove('show'),2200);
+}
+
+getState();
+renderRecent();
+updateCounters();
+</script>
